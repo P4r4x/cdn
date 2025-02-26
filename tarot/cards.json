@@ -1,0 +1,178 @@
+[
+    {
+      "id": 0,
+      "name": "愚者(The Fool)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/0-fool.jpg",
+      "upright": ["新开始", "冒险", "天真", "自由"],
+      "reversed": ["愚蠢", "冒失", "缺乏计划"],
+      "description": "调整生活，带上灵感去探索世界的美好"
+    },
+    {
+      "id": 1,
+      "name": "魔术师(The Magician)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/1-magician.jpg",
+      "upright": ["意志力", "创造力", "行动", "成功"],
+      "reversed": ["欺骗", "操纵", "浪费才能"],
+      "description": "创造, 与更高维度的自我链接"
+    },
+    {
+      "id": 2,
+      "name": "女祭司(The High Priestess)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/2-priestess.jpg",
+      "upright": ["直觉", "神秘", "智慧", "内心世界"],
+      "reversed": ["隐瞒", "疏离", "缺乏理解"],
+      "description": "倾听你的直觉, 尊重底层逻辑，看清楚事情的本质"
+    },
+    {
+      "id": 3,
+      "name": "皇后(The Empress)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/3-empress.jpg",
+      "upright": ["丰饶", "创造力", "母性", "自然"],
+      "reversed": ["依赖", "忽视", "阻碍创造力"],
+      "description": "感受内心的丰盛与滋养"
+    },
+    {
+      "id": 4,
+      "name": "皇帝(The Emperor)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/4-emperor.jpg",
+      "upright": ["权威", "稳定", "保护", "理性"],
+      "reversed": ["暴虐", "控制", "缺乏纪律"],
+      "description": "自律, 听从, 理解他人"
+    },
+    {
+      "id": 5,
+      "name": "教皇(The Hierophant)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/5-hierophant.jpg",
+      "upright": ["传统", "宗教", "教育", "权威"],
+      "reversed": ["反叛", "独立思想", "无视传统"],
+      "description": "多听从他人的建议/该是为心灵成长负起责任了"
+    },
+    {
+      "id": 6,
+      "name": "恋人(The Lovers)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/6-lovers.jpg",
+      "upright": ["爱情", "和谐", "选择", "联合"],
+      "reversed": ["冲突", "分离", "错失机会"],
+      "description": "请谨慎的做出选择/这是开始一段恋爱的好时机"
+    },
+    {
+      "id": 7,
+      "name": "战车(The Chariot)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/7-chariot.jpg",
+      "upright": ["胜利", "意志力", "行动", "掌控"],
+      "reversed": ["失败", "混乱", "失控"],
+      "description": "事情进展缓慢但更需要坚持/用理智驾驭情感"
+    },
+    {
+      "id": 8,
+      "name": "力量(Strength)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/8-strength.jpg",
+      "upright": ["勇气", "耐心", "控制", "力量"],
+      "reversed": ["自我怀疑", "懦弱", "失去控制"],
+      "description": "你就如你装出来的那样坚强/保持与他人的边界感"
+    },
+    {
+      "id": 9,
+      "name": "隐士(The Hermit)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/9-hermit.jpg",
+      "upright": ["内省", "孤独", "智慧", "引导"],
+      "reversed": ["孤立", "退缩", "被动"],
+      "description": "是时候学会独处了/要尝试着自我反思与复盘"
+    },
+    {
+      "id": 10,
+      "name": "命运之轮(Wheel of Fortune)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/10-wheel.jpg",
+      "upright": ["命运", "机会", "变化", "循环"],
+      "reversed": ["不幸", "阻碍", "倒霉"],
+      "description": "顺从命运的安排，无论是好的还是坏的/幸运将降临在你身上"
+    },
+    {
+      "id": 11,
+      "name": "正义(Justice)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/11-justice.jpg",
+      "upright": ["公平", "真理", "责任", "法律"],
+      "reversed": ["不公", "不诚实", "逃避责任"],
+      "description": "你将为你的选择所负起责任/不要过于执着于对错"
+    },
+    {
+      "id": 12,
+      "name": "倒吊人(The Hanged Man)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/12-hanged.jpg",
+      "upright": ["牺牲", "放下", "改变视角", "停顿"],
+      "reversed": ["犹豫", "受限", "拒绝改变"],
+      "description": "也许你应该换一种方式看待问题/奇迹在时刻发生"
+    },
+    {
+      "id": 13,
+      "name": "死亡(Death)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/13-death.jpg",
+      "upright": ["转变", "结束", "新的开始", "清理"],
+      "reversed": ["抵抗变化", "停滞", "困境"],
+      "description": "与过去做个道别吧，现在要重新开始了/让你困扰的很快会有结果"
+    },
+    {
+      "id": 14,
+      "name": "节制(Temperance)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/14-temperance.jpg",
+      "upright": ["平衡", "和谐", "节制", "融合"],
+      "reversed": ["极端", "不平衡", "无节制"],
+      "description": "神性与动物性在人的身上需要达到平衡"
+    },
+    {
+      "id": 15,
+      "name": "恶魔(The Devil)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/15-devil.jpg",
+      "upright": ["束缚", "诱惑", "物质", "欲望"],
+      "reversed": ["解脱", "恢复自由", "逃离"],
+      "description": "我们总是错以为自己别无选择，但总有一线生机"
+    },
+    {
+      "id": 16,
+      "name": "高塔(The Tower)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/16-tower.jpg",
+      "upright": ["突然变化", "破坏", "冲击", "启示"],
+      "reversed": ["抗拒改变", "内在动荡", "灾难"],
+      "description": "不可控的事情在发生着，享受生命时刻出现的奇迹"
+    },
+    {
+      "id": 17,
+      "name": "星星(The Star)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/17-star.jpg",
+      "upright": ["希望", "灵感", "平静", "治愈"],
+      "reversed": ["失望", "缺乏信心", "悲观"],
+      "description": "你需要将自己的经验举一反三/与你想要的东西进行链接"
+    },
+    {
+      "id": 18,
+      "name": "月亮(The Moon)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/18-moon.jpg",
+      "upright": ["直觉", "梦境", "潜意识", "幻象"],
+      "reversed": ["困惑", "欺骗", "焦虑"],
+      "description": "你需要战胜潜伏在内心的恐惧，自助者天助之"
+    },
+    {
+      "id": 19,
+      "name": "太阳(The Sun)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/19-sun.jpg",
+      "upright": ["成功", "幸福", "光明", "正能量"],
+      "reversed": ["失望", "挫折", "缺乏能量"],
+      "description": "相信自己内心的力量/事情的发展走向非常棒"
+    },
+    {
+      "id": 20,
+      "name": "审判(Judgement)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/20-judgement.jpg",
+      "upright": ["觉醒", "判断", "再生", "复苏"],
+      "reversed": ["逃避", "怀疑", "自我批评"],
+      "description": "将有莫名其妙的觉知正出现，毁灭与重生"
+    },
+    {
+      "id": 21,
+      "name": "世界(The World)",
+      "image": "https://cdn.jsdelivr.net/gh/r4x/blog/tarot/img/21-world.jpg",
+      "upright": ["完成", "成就", "整体", "旅程终点"],
+      "reversed": ["未完成", "停滞", "闭塞"],
+      "description": "用尽了全力，无论结果好与不好，你都不会后悔"
+    }
+  ]
