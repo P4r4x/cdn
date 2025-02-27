@@ -1,27 +1,21 @@
 ---
-title: Hexo 部署记录
-date: 2025/02/11
-updated: 2025/02/25
-type: 记录
-categories: 前端
-keywords:
-description:
-top_img: 
-comments: false
-cover:
-toc:
-toc_number:
-toc_style_simple:
-copyright:
-copyright_author:
-copyright_author_href:
-copyright_url:
-copyright_info:
+title: Reverse Note 1
+date:
+updated:
+type:
+comments:
+description: 
+keywords: Reverse
+top_img: https://cdn.jsdelivr.net/gh/p4r4x/cdn/img/gallery/4.png
 mathjax:
 katex:
-aplayer:
-highlight_shrink:
 aside:
+aplayer: 
+highlight_shrink:
+random:
+limit:
+  type:
+  value:
 ---
 ##  Hexo: 部署
 
@@ -31,7 +25,7 @@ aside:
 
 打开 node.js 版本管理器, 安装 `node LTS v20.18.3`, 并选为命令行版本, 然后选中模块, 安装 `hexo-cli`, `hexo`。
 
-![1.png](1.png)
+![1.png](https://cdn.jsdelivr.net/gh/p4r4x/cdn/post/hexo_build/1.png)
 
 安装完成后输入 `hexo -v` 来验证安装。
 
@@ -47,11 +41,11 @@ npm install
 
 启动项目, 可以直接在命令行输入 `hexo s` 来启动, 也可以在宝塔面板中选择添加 node 项目, 然后选中项目文件夹。注意启动项设置为 `hexo server`。
 
-![3.png](3.png)
+![3.png](https://cdn.jsdelivr.net/gh/p4r4x/cdn/post/hexo_build/3.png)
 
 hexo 项目的默认端口为 4000, 注意在服务器安全组合防火墙放行对应端口。配置完毕后即可访问网站。
 
-![4.png](4.png)
+![4.png](https://cdn.jsdelivr.net/gh/p4r4x/cdn/post/hexo_build/4.png)
 
 ### 3 配置 Git
 
@@ -82,7 +76,7 @@ ssh-keygen -t rsa -C "你的邮箱"
 ssh -T git@github.com
 ```
 
-![2.png](2.png)
+![2.png](https://cdn.jsdelivr.net/gh/p4r4x/cdn/post/hexo_build/2.png)
 
 ### 4 连接到 Github 远程仓库
 
@@ -95,6 +89,14 @@ git commit -m "first commit"
 git branch -M master
 git remote add origin git@github.com:你的用户名/仓库名.git
 git push -u origin master
+```
+
+之后的每次仓库更新需要执行:
+
+```bash
+git add .
+git commit -m "更新内容"
+git push
 ```
 ### 5 安装主题
 
@@ -110,12 +112,14 @@ npm install hexo-renderer-pug hexo-renderer-stylus --save
 
 配置完毕后再次访问网站, 显示如下则应用成功。
 
-![5.png](5.png)
+![5.png](https://cdn.jsdelivr.net/gh/p4r4x/cdn/post/hexo_build/5.png)
 
 ### 6 开发
 
-Hexo 支持直接对 Markdown 做渲染, 非常方便。
+Hexo 支持直接对 Markdown 做渲染, 非常方便 :smile: 。
 
 >   Markdown 是一种轻量级标记语言, 非常适合随手写笔记或者发布博客。[了解Markdown语法](https://www.runoob.com/markdown/md-tutorial.html)
 
 >   参考链接: [Hexo博客搭建基础教程(二)](https://www.fomal.cc/posts/4aa2d85f.html)
+
+![小豆泥](https://cdn.jsdelivr.net/gh/p4r4x/cdn/xiaoniuni.gif)
