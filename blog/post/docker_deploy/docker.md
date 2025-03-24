@@ -129,3 +129,7 @@ wsl 和 Docker Desktop 都是默认直接装在了 C 盘, 为了防止后续文�
 安装完毕后能正常打开 welcome 界面则说明安装成功了
 
 ![2.png](2.png)
+
+![xiaodouni.gif](https://cdn.jsdelivr.net/gh/p4r4x/cdn/blog/xiaodouni.gif)
+
+<img src="https://cdn.jsdelivr.net/gh/p4r4x/cdn/blog/xiaodouni.gif" style="width: 200px; " alt="" />
