@@ -1,7 +1,7 @@
 SickOS 1.1 - 渗透
 ---
 
->   参考视频: [红队笔记](https://www.bilibili.com/video/BV1Em4y1A7XX)
+>   参考视频: [红队笔记](https://www.bilibili.com/video/BV14e4y1n7ua)
 
 靶机下载: [vulnhub](https://download.vulnhub.com/sickos/sick0s1.1.7z)
 
