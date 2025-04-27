@@ -59,7 +59,7 @@ sudo nmap -sn 192.168.170.0/24
 既然已知网站使用了 wordpress, 那就可以指定后缀名 `.php`, `.html`:
 
 ```bash
-sudo gobuster dir -u http://192.168.170.139 --wordlist=/usr/share/dirbuster/wordlist/directory-list-2.3-medium.txt -x php, html
+sudo gobuster dir -u http://192.168.170.139 --wordlist=/usr/share/dirbuster/wordlists/directory-list-2.3-medium.txt -x php, html
 ```
 
 ---
