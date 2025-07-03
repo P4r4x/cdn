@@ -1,7 +1,7 @@
-pikachu 1 - 暴力破解, XSS
+pikachu 1 - 暴力破解, XSS, CSRF
 ===
 
-## 用 Docker 搭建靶场
+### 用 Docker 搭建靶场
 
 ```bash
 docker run -d -p 8765:80 8023/pikachu-expect:latest
