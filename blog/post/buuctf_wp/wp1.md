@@ -1,5 +1,4 @@
-
-buuctf web wp 1
+[buuctf] web区 write up 1
 ===
 
 ## [GYCTF2020]FlaskApp
@@ -208,6 +207,8 @@ $input = str_repeat("a", 30) . "X";
 
 ## [Zer0pts2020]Can you guess it?
 
+### 题解
+
 打开就能看见源码:
 
 {% hideToggle index.php %}
@@ -272,6 +273,8 @@ http://d7927183-505a-489e-adf0-350166d58e86.node5.buuoj.cn:81/index.php/config.p
 ```
 
 ![3.png](3.png)
+
+这道题的关键是 `basename()` 函数对不可见字符如 %ff 的处理。
 
 ## [0CTF 2016]piapiapia
 
@@ -372,6 +375,8 @@ file://suctf.c℆sr/local/nginx/conf/nginx.conf
 ~这道题好像有 bug, 提交 payload 显示 500 错误~
 
 ## [MRCTF2020] 套娃
+
+### 题解
 
 首先打开靶机就是一段代码审计:
 
