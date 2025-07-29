@@ -395,7 +395,7 @@ $query = $_SERVER['QUERY_STRING'];
 这里面包含了两个点:
 
 -   `$_SERVER["QUERY_STRING"]`
-  这是一个预定义的字符串, 表示当前查询语句, 例如`http://example.com?a=bbb` 的`$_SERVER["QUERY_STRING"]` = `"a=bbb"`; 注意， `$_SERVER["QUERY_STRING"]` 是**未解码**的(即 `%5f` 不会变成 `_`)。
+  这是一个**预定义**的字符串, 表示当前查询语句, 例如`http://example.com?a=bbb` 的`$_SERVER["QUERY_STRING"]` = `"a=bbb"`; 注意， `$_SERVER["QUERY_STRING"]` 是**未解码**的(即 `%5f` 不会变成 `_`)。
 
 这里过滤了查询语句中的 `_` 和 `%5f` (也就是 `_` 的 URL 编码), 此处的知识点是, 在PHP 的 GET 传参中, `空格` (无效变量名) 会**自动转换**成 `_`, `?b_u_p_t` = `?b u p t`;
 
