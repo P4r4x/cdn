@@ -1,4 +1,4 @@
-[buuctf] web区 write up 2
+[buuctf] web区 write up 3
 ===
 
 ## [b01lers2020]Welcome to Earth
