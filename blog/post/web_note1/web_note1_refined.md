@@ -950,14 +950,3 @@ sqlite_master 表的结构包含以下几个字段：
 
 通常回显都只有一行, 要吧所有的内容挤在一起, 就要用group concat()这个函数
 
-#### 账号密码
-
-edu src
-
-hanamiv2510@gmail.com
-up4Yft-+Scan
-
-https://lilctf.xinshi.fun/signup:
-
-2510805358@qq.com
-up4t.R4x!
