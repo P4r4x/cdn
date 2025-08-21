@@ -424,7 +424,7 @@ echo urlencode(serialize($a));
 
 ![8-3.png](8-3.png)
 
-## [GHCTF 2025](>﹏<)
+## [GHCTF 2025] (>﹏<)
 
 ### 源码审计
 
