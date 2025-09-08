@@ -174,6 +174,40 @@ intval(true) === 1
 intcal([123]) === 1 # 非空数组
 ```
 
+### escapeshell 绕过
+
+#### escapeshellcmd
+
+`escapeshellcmd()` 对字符串中可能会欺骗 shell 命令执行任意命令的字符进行转义。 此函数保证用户输入的数据在传送到 exec() 或 system() 函数，或者 执行操作符 之前进行转义。
+
+受转义的字符是: ``&#;`|*?~<>^()[]{}$\、\x0A 和 \xFF``, 前方会插入一个 `\` , 引号仅在不配对的时候转义;
+
+#### escapeshellarg
+
+给字符串增加一个单引号并且在任何单引号前面添加一个 `\`;
+
+参数注入基本用法:
+
+```php
+
+<?php
+ 
+echo escapeshellarg('Hello');
+// 输出值为：'Hello'
+ 
+echo escapeshellarg('Hello\'');
+// 输出值为：'Hello'\'''（在命令行使用 echo 'Hello'\'''，只会输出 Hello'）
+```
+
+长话短说, `escapeshellarg()` 能解决参数值的注入, 但是不能解决参数选项的注入, 例如考虑:
+
+```bash
+cmd target -a b
+```
+
+对于 `-a` 处的注入不能用这个函数解决
+
+
 ### PHP 伪协议
 
 总结: [CSDN 博客](https://segmentfault.com/a/1190000018991087)
@@ -1020,3 +1054,10 @@ tee 指令作用为读取标准输入, 并输出到指定的文件, 最常见的
 ```bash
 command | tee file.txt
 ```
+
+### tail
+
+tail 指令本身是输出文件尾部, 但是也可以作为 cat 的替代使用;
+
+此外用 `tail -f` 可以只输出新增内容:
+
