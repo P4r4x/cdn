@@ -1,6 +1,6 @@
 [NSSCTF] 部分 WP 4
 ===
 
-## [GFCTF 2021 Reverse] BabyReverse
+## [西湖论剑 2022] Node Magical Login
 
-### 
+### 题解
