@@ -51,6 +51,45 @@ gopher://127.0.0.1:6379/_*3%0d%0a$3%0d%0aSET%0d%0a$5%0d%0aKEY%0d%0a$5%0d%0aVALUE
 网络隔离(域渗透): 限制服务器访问内网的权限（防火墙策略、VPC 隔离）
 服务加固: 为内网服务（Redis/Memcached）启用认证并限制绑定 IP。
 
+## JWT
+
+JWT 是一套签名认证体系, 本身提供了防伪签名, 数字身份认证;
+
+JWT 有三部分: Header, Payload, Signature, 每部分都是一个 json;
+
+- Header:
+
+  指定 JWT 类型, 通常是 `JWT`, alg 为加密或签名算法, 常见 HMAC, RSA, ECDSA
+
+  例如:
+
+  ```json
+  {
+    "alg": "HS256",
+    "typ": "JWT"
+  }
+  ```
+
+- Payload:
+  
+  包含由服务器指定的信息, 例如:
+
+  ```json
+  {
+    "sub": "1234567890",
+    "name": "John Doe",
+    "iat": 1516239022
+  }
+  ```
+
+- Signature
+  
+  由前两部分拼起来然后进行签名生成; 生成和验证通常是使用相同秘钥, 秘钥机制保证防篡改; 例如:
+
+  ```
+  HMACSHA256(base64UrlEncode(header) + "." +base64UrlEncode(payload),secret)
+  ```
+
 ## 编码
 
 ### URL 编码
@@ -1061,3 +1100,10 @@ tail 指令本身是输出文件尾部, 但是也可以作为 cat 的替代使�
 
 此外用 `tail -f` 可以只输出新增内容:
 
+### tac
+
+tac 指令用来从最后一行从后往前输出内容:
+
+```bash
+tac /f?ag
+```

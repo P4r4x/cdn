@@ -1,4 +1,4 @@
-[buuctf] web区 write up 8
+[buuctf] web区 write up 9
 ===
 
 ## [GXYCTF2019] StrongestMind
