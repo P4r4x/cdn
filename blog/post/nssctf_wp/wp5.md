@@ -522,3 +522,58 @@ if __name__ == '__main__':
 
 虽然没有独立做出这道题, 但是审计源码也挺有收获。
 
+## [鹤城杯 2021]Middle magic
+
+依旧开门源码:
+
+```php
+<?php
+highlight_file(__FILE__);
+include "./flag.php";
+include "./result.php";
+if(isset($_GET['aaa']) && strlen($_GET['aaa']) < 20){
+
+    $aaa = preg_replace('/^(.*)level(.*)$/', '${1}<!-- filtered -->${2}', $_GET['aaa']);
+    // 这里的 ${1} 和 ${2} 就是 level 前后的 (.*) 贪婪匹配到的内容, 所以这里的含义其实是把 <!-- filtered --> 插到原内容中间
+
+    if(preg_match('/pass_the_level_1#/', $aaa)){
+        echo "here is level 2";
+        ...
+?> 
+```
+
+先看 level 1, 这里有两个模式匹配, 注意前后都是贪婪匹配, 并且只有一次正则替换, 那么能想到双写 payload 或者用**换行符**去绕过 `(.*)`:
+
+```
+(GET)
+?aaa=%0apass_the_level_1%23
+```
+
+![30-1.png](30-1.png)
+
+接下来看 level 2:
+
+```php
+if (isset($_POST['admin']) and isset($_POST['root_pwd'])) {
+            if ($_POST['admin'] == $_POST['root_pwd'])
+                echo '<p>The level 2 can not pass!</p>';
+        // START FORM PROCESSING    
+            else if (sha1($_POST['admin']) === sha1($_POST['root_pwd'])){
+                echo "here is level 3,do you kown how to overcome it?"; 
+                ...
+            }
+}
+```
+
+经典的两变量不等, 但是哈希强相等, 可以传两个不同的数组进去来通过第一个检测, 又因为 sha1 函数对数组输入会返回警告值 false, `false = false` 会绕过第二层:
+
+```
+(POST)
+admin[]=1&root_pwd[]=2
+```
+
+![30-2.png](30-2.png)
+
+最后是第三层, 第三层里提到了一个变量 `$result`, 尝试随便传一个直接通过了, 看了下 wp 其他师傅也是这个情况, 不清楚是不是环境自己的问题, 不管怎么样, 直接出 flag 了;
+
+![30-3.png](30-3.png)
