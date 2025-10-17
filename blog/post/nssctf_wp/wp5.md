@@ -455,9 +455,9 @@ class AddrValidator(object):
         return self.is_ip_allowed(ip, _local_addresses=_local_addresses)
 ```
 
-##### 分块总结
+分块总结:
 
-概括的来说:
+概括的来说,
 
 - `canonicalize_hostname`: 主机名标准化, 统一大小写, 并做 IDNA 转换 (例如中文域名的支持);
 
@@ -523,6 +523,8 @@ if __name__ == '__main__':
 虽然没有独立做出这道题, 但是审计源码也挺有收获。
 
 ## [鹤城杯 2021]Middle magic
+
+### 题解
 
 依旧开门源码:
 

