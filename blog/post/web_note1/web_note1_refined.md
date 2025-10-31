@@ -16,6 +16,22 @@ Referer: https://www.google.com/  # 添加在这里
 Cookie: session=abc123
 ```
 
+本地:
+
+```
+
+X-Forwarded-For:127.0.0.1
+Client-ip:127.0.0.1
+X-Client-IP:127.0.0.1
+X-Remote-IP:127.0.0.1
+X-Rriginating-IP:127.0.0.1
+X-Remote-addr:127.0.0.1
+HTTP_CLIENT_IP:127.0.0.1
+X-Real-IP:127.0.0.1
+X-Originating-IP:127.0.0.1
+via:127.0.0.1
+```
+
 ## SSRF: Gopher 协议
 
 Gopher 是早期互联网协议（1990年代），用于分发、搜索和检索文档。它支持多种请求类型（如文件、目录、索引搜索等）。Gopher 协议常被用作 SSRF（Server-Side Request Forgery，服务端请求伪造）攻击的手段:
@@ -97,6 +113,16 @@ JWT 有三部分: Header, Payload, Signature, 每部分都是一个 json;
 ![url_encode.png](url_encode.png)
 
 ## PHP
+
+### PHP 所有有关 bash 命令的函数总结
+
+system(): 无需多言, 执行并回显
+
+exec():
+
+shell_exec():
+
+反引号: 等于直接在 bash 里
 
 ### PHP_RCE : MVC 框架
 

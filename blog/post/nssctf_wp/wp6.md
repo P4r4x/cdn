@@ -518,7 +518,7 @@ print(result2)
 后来看 wp 发现了从 `lipsum` 开始的攻击链:
 
 ```python
-lipsum|attr("__globals__").get("os").popen("ls").read()
+lipsum.__globals__.("os").popen("ls").read()
 ```
 
 这个 `lipsun` 是一个内置的全局函数, 并且这个内置空间的全局函数中本身就含有 `os` 模块, 省去了导入步骤, 更加简单;
