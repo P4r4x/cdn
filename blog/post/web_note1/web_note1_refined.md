@@ -574,6 +574,8 @@ if(preg_match('/.+\.ph(p[3457]?|t|tml)/i', $filename)) {
 sqlmap -r a.txt -dbs
 ```
 
+注意这是 post;
+
 接下来参照这个例子, 按从外到内, 从库到表, 到字段的方式渗透数据库
 
 ```bash
