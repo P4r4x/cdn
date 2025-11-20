@@ -366,3 +366,79 @@ system('rm -rf users/'.$randFolder);
 明文 → 字符编码（如 UTF-8）→ 字节序列 → 二进制字符串 → 0/1 映射为 ZW 字符 → 插入到宿主文本
 ```
 
+## [WEB] [HBCTF 2017] 大美西安
+
+### 题解
+
+进入网站, 是一个登录界面, 打开源码, 有注释: `index.php?file=register.php`;
+
+扫一下目录, 扫出 `upload.php`, `view.php`, `login.php`, `register.php`;
+
+注册登录后, 点击收藏就可以下载一张图片, 抓包查看:
+
+![48-1.png](48-1.png)
+
+这个 `%E6%94%B6%E8%97%8F` 就是 "收藏" 两个字的 url 编码;
+
+尝试改这个参数去下载其他数据, 看了下 bp, 居然是在 image id 处有 sql 注入, 真是学到了, 并且还是双写绕过:
+
+![48-2.png](48-2.png)
+
+带出 index.php:
+
+```php
+include("config.php");
+$_POST = d_addslashes($_POST);
+$_GET = d_addslashes($_GET);
+$file  = isset($_GET['file'])?$_GET['file']:"home";
+// echo $file;
+
+if(preg_match('/\.\.|^[\s]*\/|^[\s]*php:|filter/i',$file)){
+	   echo "<div class=\"msg error\" id=\"message\">
+		<i class=\"fa fa-exclamation-triangle\"></i>Attack Detected!</div>";
+		die();
+}
+$filename = $file.".php";
+if(!include($filename)){
+	if(!isset($_SESSION['username'])||!isset($_SESSION['userid'])){
+	  header("Location: index.php?file=login");
+	  die();
+    }
+}
+```
+
+带 `upload` 即可带出源码:
+
+```php
+<?php 
+#define("DIR_PERMITION",time());
+include("config.php");
+$_POST = d_addslashes($_POST);
+$_GET = d_addslashes($_GET);
+ 
+$file  = isset($_GET['file'])?$_GET['file']:"home";
+// echo $file;
+if(preg_match('/\.\.|^[\s]*\/|^[\s]*php:|filter/i',$file)){
+	   echo "<div class=\"msg error\" id=\"message\">
+		<i class=\"fa fa-exclamation-triangle\"></i>Attack Detected!</div>";
+		die();
+}
+ 
+$filename = $file.".php";
+ 
+if(!include($filename)){
+    
+	if(!isset($_SESSION['username'])||!isset($_SESSION['userid'])){
+	  header("Location: index.php?file=login");
+	  die();
+    }
+?>
+```
+
+首先检查文件类型和后缀名。 然后文件重命名为 `/Up10aDS/random_str().jpg` 插入数据库。数据库结构为 *uid,image_name,location*;
+
+用 `phar://` 传上去, 爆出表名, 然后就可以读 flag;
+
+## 
+
+### 

