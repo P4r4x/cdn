@@ -585,11 +585,11 @@ Handlebars 的特点：
 
 ### 总结
 
-| 阶段 | 漏洞                                            |
-| ---- | ----------------------------------------------- |
+| 阶段 | 漏洞                                             |
+|:----:| ------------------------------------------------|
 | 1    | CSS 注入                                        |
-| 2    | @starting-style 产生可观测 side channel（白屏） |
-| 3    | XS-Leak：用来盲读其他用户 note 内容             |
+| 2    | @starting-style 产生可观测 side channel（白屏）  |
+| 3    | XS-Leak：用来盲读其他用户 note 内容              |
 | 4    | note 内容进入 Handlebars → Prototype Pollution  |
 | 5    | RCE                                             |
 

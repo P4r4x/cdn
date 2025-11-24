@@ -438,7 +438,3 @@ if(!include($filename)){
 首先检查文件类型和后缀名。 然后文件重命名为 `/Up10aDS/random_str().jpg` 插入数据库。数据库结构为 *uid,image_name,location*;
 
 用 `phar://` 传上去, 爆出表名, 然后就可以读 flag;
-
-## 
-
-### 
