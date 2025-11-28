@@ -1150,6 +1150,16 @@ sqlite_master 表的结构包含以下几个字段：
 
 通常回显都只有一行, 要吧所有的内容挤在一起, 就要用group concat()这个函数
 
+## GraphQL 注入
+
+参考: [hwlanxiaojun 博客](https://hwlanxiaojun.github.io/2020/04/14/%E5%BD%93CTF%E9%81%87%E4%B8%8AGraphQL%E7%9A%84%E9%82%A3%E4%BA%9B%E4%BA%8B/)
+
+### 常用的测试 payload
+
+```graphql
+query IntrospectionQuery{__schema{queryType{name}mutationType{name}subscriptionType{name}types{...FullType}directives{name description locations args{...InputValue}}}}fragment FullType on __Type{kind name description fields(includeDeprecated:true){name description args{...InputValue}type{...TypeRef}isDeprecated deprecationReason}inputFields{...InputValue}interfaces{...TypeRef}enumValues(includeDeprecated:true){name description isDeprecated deprecationReason}possibleTypes{...TypeRef}}fragment InputValue on __InputValue{name description type{...TypeRef}defaultValue}fragment TypeRef on __Type{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name ofType{kind name}}}}}}}}
+```
+
 ## bash 指令
 
 ### tee
