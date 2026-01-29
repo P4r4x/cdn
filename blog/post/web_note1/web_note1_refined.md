@@ -268,8 +268,11 @@ sha1:
 
 ```php
 intval(true) === 1
-intcal([123]) === 1 # 非空数组
+intval([123]) === 1 # 非空数组
+intval(1e1) === 1 # 注意, 不解析科学计数法
 ```
+
+这是一个可利用的特性, 例如 `intval($num) < 2020 && intval($num + 1) > 2021` 这个条件, 只需令 `$num = 2019e1` 即可, 在 php 中, `+` 和 `intval` 对字符串的解析规则不同
 
 ### escapeshell 绕过
 
